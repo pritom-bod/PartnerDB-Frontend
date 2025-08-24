@@ -106,7 +106,7 @@ export default function AdminUI() {
         </div>
       </form>
 
-      {/* Table */}
+      {/* Table
       <div className="overflow-auto border rounded">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
@@ -135,7 +135,7 @@ export default function AdminUI() {
             )}
           </tbody>
         </table>
-      </div>
+      </div> */}
     </div>
   );
 }
