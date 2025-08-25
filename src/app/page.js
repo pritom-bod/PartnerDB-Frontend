@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { FaEdit, FaTrashAlt, FaTimes, FaSearch } from "react-icons/fa";
+import Image from "next/image";
 
 const API = "http://127.0.0.1:8000/api";
 
@@ -20,9 +22,16 @@ export default function Page() {
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteRowId, setDeleteRowId] = useState(null);
 
-  //  search and filter + pagination
-  const fetchRows = async ({ q = "", hq = "", page = 1, pageSize = DEFAULT_PAGE_SIZE } = {}) => {
+  // Search and filter + pagination
+  const fetchRows = async ({
+    q = "",
+    hq = "",
+    page = 1,
+    pageSize = DEFAULT_PAGE_SIZE,
+  } = {}) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -78,7 +87,9 @@ export default function Page() {
       setRows((prev) => {
         if (action === "create") {
           const exists = prev.some((p) => p.id === partner.id);
-          return exists ? prev.map((p) => (p.id === partner.id ? partner : p)) : [partner, ...prev];
+          return exists
+            ? prev.map((p) => (p.id === partner.id ? partner : p))
+            : [partner, ...prev];
         } else if (action === "update") {
           return prev.map((p) => (p.id === partner.id ? partner : p));
         } else if (action === "delete") {
@@ -92,27 +103,41 @@ export default function Page() {
   }, []);
 
   const headers = useMemo(
-    () => ["Firm Name", "HQ", "Focus Area", "Contact", "Donor Experience", "Current Partnership Status"],
+    () => ["Firm Name", "Headquarters", "Contact", "Action"],
     []
   );
 
-  //Edit/Delete Logic 
-
-  const handleRowClick = (row) => {
+  // Edit/Delete Logic
+  const handleEditClick = (e, row) => {
+    e.stopPropagation();
     setSelectedRow(row);
     setFormData(row);
+    setEditMode(true);
     setShowModal(true);
-    setEditMode(false);
   };
 
-  const handleDelete = async () => {
+  const handleDeleteClick = (e, rowId) => {
+    e.stopPropagation();
+    setDeleteRowId(rowId);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await fetch(`${API}/partners/${selectedRow.id}/`, { method: "DELETE" });
-      setRows((prev) => prev.filter((r) => r.id !== selectedRow.id));
+      await fetch(`${API}/partners/${deleteRowId}/`, { method: "DELETE" });
+      setRows((prev) => prev.filter((r) => r.id !== deleteRowId));
+      setShowDeleteConfirm(false);
       setShowModal(false);
     } catch (err) {
       console.error("Error deleting:", err);
     }
+  };
+
+  const handleRowClick = (row) => {
+    setSelectedRow(row);
+    setFormData(row);
+    setEditMode(false);
+    setShowModal(true);
   };
 
   const handleUpdate = async () => {
@@ -132,46 +157,88 @@ export default function Page() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Partner Database</h1>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 lg:p-8 max-w-7xl mx-auto">
+      {/* Header with Logo and Title */}
+      <header className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <Image
+            src="/company-logo.svg"
+            alt="Company Logo"
+            width={48}
+            height={48}
+            className="rounded-full"
+          />
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Law Firm Directory
+          </h1>
+        </div>
+        <a
+          href="/admin-ui"
+          className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+        >
+          Admin UI
+        </a>
+      </header>
 
       {/* Search + Filter */}
-      <form onSubmit={onSearch} className="flex gap-3 mb-4 flex-wrap">
-        <input
-          className="border px-3 py-2 rounded w-full md:w-auto flex-1"
-          placeholder="Search…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+      <form
+        onSubmit={onSearch}
+        className="flex flex-col sm:flex-row gap-4 mb-8 items-center"
+      >
+        <div className="relative flex-1 min-w-[200px]">
+          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300" />
+          <input
+            className="w-full pl-12 pr-4 py-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            placeholder="Search firms..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <button
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all font-medium"
+        >
+          Search
+        </button>
         <select
-          className="border px-3 py-2 rounded"
+          className="w-full sm:w-auto px-4 py-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           value={hq}
           onChange={(e) => setHq(e.target.value)}
         >
-          <option value="">All HQ</option>
+          <option value="">All Headquarters</option>
           {hqs.map((c, idx) => (
             <option key={`${c}-${idx}`} value={c}>
               {c}
             </option>
           ))}
         </select>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded">Filter</button>
       </form>
 
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+        Sums of Firms
+      </h2>
+
       {/* Table */}
-      <div className="overflow-auto border rounded">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="hidden md:table-header-group bg-gray-100 dark:bg-gray-700">
             <tr>
               {headers.map((h) => (
-                <th key={h} className="text-left px-3 py-2 font-semibold border-b">{h}</th>
+                <th
+                  key={h}
+                  className="text-left px-6 py-4 font-semibold text-gray-600 dark:text-gray-200 uppercase text-xs tracking-wide"
+                >
+                  {h}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td className="px-3 py-6 text-center" colSpan={headers.length}>
+                <td
+                  className="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
+                  colSpan={headers.length}
+                >
                   Loading...
                 </td>
               </tr>
@@ -179,140 +246,295 @@ export default function Page() {
               rows.map((r) => (
                 <tr
                   key={r.id}
-                  className="odd:bg-white even:bg-gray-50 cursor-pointer hover:bg-blue-50"
+                  className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b dark:border-gray-700 last:border-b-0 cursor-pointer"
                   onClick={() => handleRowClick(r)}
                 >
-                  <td className="px-3 py-2 border-b">{r.firm_name}</td>
-                  <td className="px-3 py-2 border-b">{r.hq || "-"}</td>
-                  <td className="px-3 py-2 border-b">{r.focus_area || "-"}</td>
-                  <td className="px-3 py-2 border-b">{r.contact || "-"}</td>
-                  <td className="px-3 py-2 border-b">{r.donor_experience || "-"}</td>
-                  <td className="px-3 py-2 border-b">{r.current_partnership_status || "-"}</td>
+                  <td className="p-6 font-semibold text-gray-900 dark:text-white">
+                    <div className="flex items-center gap-4">
+                      <Image
+                        src="/firm-icon.svg"
+                        alt="Firm Icon"
+                        width={24}
+                        height={24}
+                        className="hidden md:block"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-base">{r.firm_name}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {r.firm}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-6 text-gray-500 dark:text-gray-400">
+                    <div className="flex flex-col">
+                      <span>{r.hq || "-"}</span>
+                      <span className="text-sm">Location</span>
+                    </div>
+                  </td>
+                  <td className="p-6 text-gray-500 dark:text-gray-400">
+                    <div className="flex flex-col">
+                      <span>{r.contact || "-"}</span>
+                      <span className="text-sm">{r.email || "-"}</span>
+                    </div>
+                  </td>
+                  <td className="p-6">
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={(e) => handleEditClick(e, r)}
+                        className="text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      >
+                        <FaEdit size={20} />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteClick(e, r.id)}
+                        className="text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                      >
+                        <FaTrashAlt size={20} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td className="px-3 py-6 text-center" colSpan={headers.length}>
+                <td
+                  className="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
+                  colSpan={headers.length}
+                >
                   No data found
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
 
-        {/* Pagination Controls */}
-        <div className="flex justify-between items-center mt-4">
-          <button
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          >
-            Previous
-          </button>
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          >
-            Next
-          </button>
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-6">
+        <button
+          className="px-5 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+        >
+          Previous
+        </button>
+        <span className="text-sm text-gray-600 dark:text-gray-300">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          className="px-5 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+        >
+          Next
+        </button>
+      </div>
+
+      {/* Modal for Details/Edit */}
+      {showModal && selectedRow && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 backdrop-blur-sm transition-all">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md relative transform transition-all scale-100">
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            >
+              <FaTimes size={24} />
+            </button>
+            {!editMode ? (
+              <>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b border-gray-200 dark:border-gray-700 pb-3">
+                  Firm Details
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      Firm Name:
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {selectedRow.firm_name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      HQ:
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {selectedRow.hq || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      Contact:
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {selectedRow.contact || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      Focus Area:
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {selectedRow.focus_area || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      Donor Experience:
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {selectedRow.donor_experience || "-"}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-4 mt-6">
+                  <button
+                    className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all font-medium"
+                    onClick={() => setEditMode(true)}
+                  >
+                    Edit
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+                  Edit Firm
+                </h2>
+                <div className="flex flex-col gap-4">
+                  <label className="flex flex-col">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                      Firm Name
+                    </span>
+                    <input
+                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      value={formData.firm_name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, firm_name: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label className="flex flex-col">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                      HQ
+                    </span>
+                    <input
+                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      value={formData.hq || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, hq: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label className="flex flex-col">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                      Focus Area
+                    </span>
+                    <input
+                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      value={formData.focus_area || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, focus_area: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label className="flex flex-col">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                      Contact
+                    </span>
+                    <input
+                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      value={formData.contact || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, contact: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label className="flex flex-col">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                      Donor Experience
+                    </span>
+                    <input
+                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      value={formData.donor_experience || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          donor_experience: e.target.value,
+                        })
+                      }
+                    />
+                  </label>
+                  <label className="flex flex-col">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                      Partnership Status
+                    </span>
+                    <input
+                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      value={formData.current_partnership_status || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          current_partnership_status: e.target.value,
+                        })
+                      }
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-end gap-4 mt-6">
+                  <button
+                    className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all font-medium"
+                    onClick={handleUpdate}
+                  >
+                    Update
+                  </button>
+                  <button
+                    className="px-5 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-all font-medium"
+                    onClick={() => setEditMode(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-
-      {/* Modal part*/}
-{showModal && selectedRow && (
-  <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-[500px] pointer-events-auto">
-      {!editMode ? (
-        <>
-          <h2 className="text-xl font-semibold mb-4">Manage Partner</h2>
-          <p className="mb-4">Firm: {selectedRow.firm_name}</p>
-          <div className="flex justify-end gap-3">
-            <button
-              className="bg-yellow-500 text-white px-4 py-2 rounded"
-              onClick={() => setEditMode(true)}
-            >
-              Edit
-            </button>
-            <button
-              className="bg-red-600 text-white px-4 py-2 rounded"
-              onClick={handleDelete}
-            >
-              Delete
-            </button>
-            <button
-              className="bg-gray-400 text-white px-4 py-2 rounded"
-              onClick={() => setShowModal(false)}
-            >
-              Close
-            </button>
-          </div>
-        </>
-      ) : (
-        <>
-          <h2 className="text-xl font-semibold mb-4">Edit Partner</h2>
-          <div className="flex flex-col gap-3">
-            <input
-              className="border px-3 py-2 rounded"
-              value={formData.firm_name}
-              onChange={(e) => setFormData({ ...formData, firm_name: e.target.value })}
-            />
-            <input
-              className="border px-3 py-2 rounded"
-              value={formData.hq || ""}
-              onChange={(e) => setFormData({ ...formData, hq: e.target.value })}
-            />
-            <input
-              className="border px-3 py-2 rounded"
-              value={formData.focus_area || ""}
-              onChange={(e) => setFormData({ ...formData, focus_area: e.target.value })}
-            />
-            <input
-              className="border px-3 py-2 rounded"
-              value={formData.contact || ""}
-              onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-            />
-            <input
-              className="border px-3 py-2 rounded"
-              value={formData.donor_experience || ""}
-              onChange={(e) => setFormData({ ...formData, donor_experience: e.target.value })}
-            />
-            <input
-              className="border px-3 py-2 rounded"
-              value={formData.current_partnership_status || ""}
-              onChange={(e) => setFormData({ ...formData, current_partnership_status: e.target.value })}
-            />
-          </div>
-          <div className="flex justify-end gap-3 mt-4">
-            <button
-              className="bg-blue-600 text-white px-4 py-2 rounded"
-              onClick={handleUpdate}
-            >
-              Update
-            </button>
-            <button
-              className="bg-gray-400 text-white px-4 py-2 rounded"
-              onClick={() => setShowModal(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </>
       )}
-    </div>
-  </div>
-)}
 
-
-      {/* Admin link */}
-      <div className="mt-4">
-        <a href="/admin-ui" className="underline">
-          Go to Admin UI
-        </a>
-      </div>
+      {/* Delete Confirmation Popup */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 backdrop-blur-sm transition-all">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm relative transform transition-all scale-100">
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            >
+              <FaTimes size={24} />
+            </button>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Confirm Delete
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Are you sure you want to delete this firm?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 transition-all font-medium"
+                onClick={confirmDelete}
+              >
+                Confirm
+              </button>
+              <button
+                className="px-5 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-all font-medium"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
