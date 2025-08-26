@@ -76,8 +76,8 @@ export default function AdminUI() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Admin UI</h1>
-
+      <h1 className="text-2xl font-bold text-red-700 dark:text-red-800">Create Firms</h1>
+      <br />
       {/* Form */}
       <form onSubmit={save} className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
         <input className="border px-3 py-2 rounded" placeholder="Firm Name *" required
@@ -95,7 +95,7 @@ export default function AdminUI() {
           value={form.donor_experience} onChange={(e) => setForm({ ...form, donor_experience: e.target.value })} />
 
         <div className="md:col-span-2 flex gap-2">
-          <button disabled={loading} className="bg-green-600 text-white px-4 py-2 rounded">
+          <button disabled={loading} className="bg-blue-900 dark:text-blue-800 text-white px-4 py-2 rounded">
             {editingId ? "Update" : "Create"}
           </button>
           {editingId && (
