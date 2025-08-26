@@ -335,174 +335,174 @@ export default function Page() {
 
       {/* Modal for Details/Edit */}
       {showModal && selectedRow && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 backdrop-blur-sm transition-all">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md relative transform transition-all scale-100">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-            >
-              <FaTimes size={24} />
-            </button>
-            {!editMode ? (
-              <>
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b border-gray-200 dark:border-gray-700 pb-3">
-                  Firm Details
-                </h2>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-white-500 dark:text-gray-400">
-                      Firms Name:
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {selectedRow.firm_name}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      HQ:
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {selectedRow.hq || "-"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      Contact:
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {selectedRow.contact || "-"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      Focus Area:
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {selectedRow.focus_area || "-"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      Donor Experience:
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {selectedRow.donor_experience || "-"}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-4 mt-6">
-                  <button
-                    className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all font-medium"
-                    onClick={() => setEditMode(true)}
-                  >
-                    Edit
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-                  Edit Firm
-                </h2>
-                <div className="flex flex-col gap-4">
-                  <label className="flex flex-col">
-                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                      Firm Name
-                    </span>
-                    <input
-                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      value={formData.firm_name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, firm_name: e.target.value })
-                      }
-                    />
-                  </label>
-                  <label className="flex flex-col">
-                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                      HQ
-                    </span>
-                    <input
-                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      value={formData.hq || ""}
-                      onChange={(e) =>
-                        setFormData({ ...formData, hq: e.target.value })
-                      }
-                    />
-                  </label>
-                  <label className="flex flex-col">
-                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                      Focus Area
-                    </span>
-                    <input
-                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      value={formData.focus_area || ""}
-                      onChange={(e) =>
-                        setFormData({ ...formData, focus_area: e.target.value })
-                      }
-                    />
-                  </label>
-                  <label className="flex flex-col">
-                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                      Contact
-                    </span>
-                    <input
-                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      value={formData.contact || ""}
-                      onChange={(e) =>
-                        setFormData({ ...formData, contact: e.target.value })
-                      }
-                    />
-                  </label>
-                  <label className="flex flex-col">
-                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                      Donor Experience
-                    </span>
-                    <input
-                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      value={formData.donor_experience || ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          donor_experience: e.target.value,
-                        })
-                      }
-                    />
-                  </label>
-                  <label className="flex flex-col">
-                    <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                      Partnership Status
-                    </span>
-                    <input
-                      className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      value={formData.current_partnership_status || ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          current_partnership_status: e.target.value,
-                        })
-                      }
-                    />
-                  </label>
-                </div>
-                <div className="flex justify-end gap-4 mt-6">
-                  <button
-                    className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all font-medium"
-                    onClick={handleUpdate}
-                  >
-                    Update
-                  </button>
-                  <button
-                    className="px-5 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-all font-medium"
-                    onClick={() => setEditMode(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            )}
+  <div className="fixed inset-0 flex items-center justify-center p-4 backdrop-blur-sm transition-all">
+    <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl w-[90vw] max-w-4xl h-[80vh] relative transform transition-all scale-100">
+      <button
+        onClick={() => setShowModal(false)}
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+      >
+        <FaTimes size={24} />
+      </button>
+      {!editMode ? (
+        <>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b border-gray-200 dark:border-gray-700 pb-3">
+            Firm Details
+          </h2>
+          <div className="space-y-4 overflow-y-auto max-h-[calc(80vh-200px)]"> {/* Scrollable area */}
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Firms Name:
+              </span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {selectedRow.firm_name}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                HQ:
+              </span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {selectedRow.hq || "-"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Contact:
+              </span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {selectedRow.contact || "-"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Focus Area:
+              </span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {selectedRow.focus_area || "-"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Donor Experience:
+              </span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {selectedRow.donor_experience || "-"}
+              </span>
+            </div>
           </div>
-        </div>
+          <div className="flex justify-end gap-4 mt-6">
+            <button
+              className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all font-medium"
+              onClick={() => setEditMode(true)}
+            >
+              Edit
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+            Edit Firm
+          </h2>
+          <div className="flex flex-col gap-4 overflow-y-auto max-h-[calc(80vh-200px)]"> {/* Scrollable area */}
+            <label className="flex flex-col">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Firm Name
+              </span>
+              <input
+                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                value={formData.firm_name}
+                onChange={(e) =>
+                  setFormData({ ...formData, firm_name: e.target.value })
+                }
+              />
+            </label>
+            <label className="flex flex-col">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                HQ
+              </span>
+              <input
+                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                value={formData.hq || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, hq: e.target.value })
+                }
+              />
+            </label>
+            <label className="flex flex-col">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Focus Area
+              </span>
+              <input
+                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                value={formData.focus_area || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, focus_area: e.target.value })
+                }
+              />
+            </label>
+            <label className="flex flex-col">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Contact
+              </span>
+              <input
+                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                value={formData.contact || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, contact: e.target.value })
+                }
+              />
+            </label>
+            <label className="flex flex-col">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Donor Experience
+              </span>
+              <input
+                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                value={formData.donor_experience || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    donor_experience: e.target.value,
+                  })
+                }
+              />
+            </label>
+            <label className="flex flex-col">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                Partnership Status
+              </span>
+              <input
+                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                value={formData.current_partnership_status || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    current_partnership_status: e.target.value,
+                  })
+                }
+              />
+            </label>
+          </div>
+          <div className="flex justify-end gap-4 mt-6">
+            <button
+              className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all font-medium"
+              onClick={handleUpdate}
+            >
+              Update
+            </button>
+            <button
+              className="px-5 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-all font-medium"
+              onClick={() => setEditMode(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </>
       )}
+    </div>
+  </div>
+)}
 
       {/* Delete Confirmation Popup */}
       {showDeleteConfirm && (
