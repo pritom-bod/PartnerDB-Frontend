@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FaEdit, FaTrashAlt, FaTimes, FaSearch } from "react-icons/fa";
 import Image from "next/image";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "https://maxfirmsbackend.onrender.com/api";
 
 export default function Page() {
   const [rows, setRows] = useState([]);
