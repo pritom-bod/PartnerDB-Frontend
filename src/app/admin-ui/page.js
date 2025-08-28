@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 const API = "http://127.0.0.1:8000/api/partners/";
+const UPLOAD_API = "http://127.0.0.1:8000/api/upload-excel/";
 
 const emptyForm = {
   firm_name: "",
@@ -18,11 +20,19 @@ export default function AdminUI() {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
+  // Excel upload states
+  const [file, setFile] = useState(null);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadErrors, setUploadErrors] = useState([]);
 
   const fetchRows = async () => {
-    const res = await fetch(API);
-    const data = await res.json();
-    setRows(data);
+    try {
+      const res = await fetch(API);
+      const data = await res.json();
+      setRows(data.results || data); // Handle both paginated and non-paginated responses
+    } catch (err) {
+      console.error("Error fetching rows:", err);
+    }
   };
 
   useEffect(() => {
@@ -66,76 +76,204 @@ export default function AdminUI() {
 
   const del = async (id) => {
     if (!confirm("Delete this partner?")) return;
-    const res = await fetch(`${API}${id}/`, { method: "DELETE" });
-    if (!res.ok) {
+    try {
+      const res = await fetch(`${API}${id}/`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete failed");
+      await fetchRows();
+    } catch (err) {
       alert("Delete failed");
+    }
+  };
+
+  // Excel upload handler
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+    setUploadMessage("");
+    setUploadErrors([]);
+  };
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!file) {
+      setUploadMessage("Please select an Excel file");
       return;
     }
-    await fetchRows();
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post(UPLOAD_API, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setUploadMessage("Uploaded successfully!"); // Success message
+      if (response.data.skipped) {
+        setUploadErrors(response.data.skipped);
+      }
+      setFile(null); // Reset file input
+      await fetchRows(); // Refresh list
+    } catch (error) {
+      setUploadMessage(error.response?.data?.error || "Upload failed");
+      setUploadErrors([]);
+    }
   };
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold text-red-700 dark:text-red-800">Create Firms</h1>
-      <br />
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-red-700 dark:text-red-800">
+          Create Firms
+        </h1>
+        {/* Excel Upload Section */}
+        <form
+          onSubmit={handleUpload}
+          className="flex items-center gap-3"
+        >
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleFileChange}
+            className="px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-gray-200 dark:file:bg-gray-600 file:text-gray-700 dark:file:text-gray-200 hover:file:bg-gray-300 dark:hover:file:bg-gray-500 transition-all"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 transition-all font-medium"
+          >
+            Upload Excel
+          </button>
+        </form>
+      </div>
+      {uploadMessage && (
+        <div className="mb-6 p-4 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-lg">
+          {uploadMessage}
+        </div>
+      )}
+      {uploadErrors.length > 0 && (
+        <div className="mb-6 p-4 bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 rounded-lg">
+          <p>Errors:</p>
+          <ul className="list-disc pl-5">
+            {uploadErrors.map((err, idx) => (
+              <li key={idx}>{err}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Form */}
       <form onSubmit={save} className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-        <input className="border px-3 py-2 rounded" placeholder="Firm Name *" required
-          value={form.firm_name} onChange={(e) => setForm({ ...form, firm_name: e.target.value })} />
-        <input className="border px-3 py-2 rounded" placeholder="HQ (Country)"
-          value={form.hq} onChange={(e) => setForm({ ...form, hq: e.target.value })} />
-        <input className="border px-3 py-2 rounded" placeholder="Contact"
-          value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} />
-        <input className="border px-3 py-2 rounded" placeholder="Current Partnership Status"
+        <input
+          className="border px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          placeholder="Firm Name *"
+          required
+          value={form.firm_name}
+          onChange={(e) => setForm({ ...form, firm_name: e.target.value })}
+        />
+        <input
+          className="border px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          placeholder="HQ (Country)"
+          value={form.hq}
+          onChange={(e) => setForm({ ...form, hq: e.target.value })}
+        />
+        <input
+          className="border px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          placeholder="Contact"
+          value={form.contact}
+          onChange={(e) => setForm({ ...form, contact: e.target.value })}
+        />
+        <input
+          className="border px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          placeholder="Current Partnership Status"
           value={form.current_partnership_status}
-          onChange={(e) => setForm({ ...form, current_partnership_status: e.target.value })} />
-        <textarea className="border px-3 py-2 rounded md:col-span-2" rows={3} placeholder="Focus Area"
-          value={form.focus_area} onChange={(e) => setForm({ ...form, focus_area: e.target.value })} />
-        <textarea className="border px-3 py-2 rounded md:col-span-2" rows={3} placeholder="Donor Experience"
-          value={form.donor_experience} onChange={(e) => setForm({ ...form, donor_experience: e.target.value })} />
+          onChange={(e) => setForm({ ...form, current_partnership_status: e.target.value })}
+        />
+        <textarea
+          className="border px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all md:col-span-2"
+          rows={3}
+          placeholder="Focus Area"
+          value={form.focus_area}
+          onChange={(e) => setForm({ ...form, focus_area: e.target.value })}
+        />
+        <textarea
+          className="border px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all md:col-span-2"
+          rows={3}
+          placeholder="Donor Experience"
+          value={form.donor_experience}
+          onChange={(e) => setForm({ ...form, donor_experience: e.target.value })}
+        />
 
         <div className="md:col-span-2 flex gap-2">
-          <button disabled={loading} className="bg-blue-900 dark:text-blue-800 text-white px-4 py-2 rounded">
+          <button
+            disabled={loading}
+            className="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 transition-all font-medium"
+          >
             {editingId ? "Update" : "Create"}
           </button>
           {editingId && (
-            <button type="button" className="px-4 py-2 rounded border" onClick={() => { setEditingId(null); setForm(emptyForm); }}>
+            <button
+              type="button"
+              className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+              onClick={() => {
+                setEditingId(null);
+                setForm(emptyForm);
+              }}
+            >
               Cancel
             </button>
           )}
         </div>
       </form>
-
-      {/* Table
-      <div className="overflow-auto border rounded">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-50">
+      {/* Table */}
+      {/* <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden"> */}
+        {/* <table className="min-w-full text-sm">
+          <thead className="bg-blue-900 dark:bg-blue-900 text-white">
             <tr>
-              {["Firm Name","HQ","Focus Area","Contact","Donor Experience","Current Partnership Status","Actions"].map(h => (
-                <th key={h} className="text-left px-3 py-2 font-semibold border-b">{h}</th>
-              ))}
+              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">Firm Name</th>
+              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">HQ</th>
+              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">Contact</th>
+              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {rows.length ? rows.map((r) => (
-              <tr key={r.id} className="odd:bg-white even:bg-gray-50">
-                <td className="px-3 py-2 border-b">{r.firm_name}</td>
-                <td className="px-3 py-2 border-b">{r.hq || "-"}</td>
-                <td className="px-3 py-2 border-b">{r.focus_area || "-"}</td>
-                <td className="px-3 py-2 border-b">{r.contact || "-"}</td>
-                <td className="px-3 py-2 border-b">{r.donor_experience || "-"}</td>
-                <td className="px-3 py-2 border-b">{r.current_partnership_status || "-"}</td>
-                <td className="px-3 py-2 border-b">
-                  <button className="px-3 py-1 rounded border mr-2" onClick={() => editRow(r)}>Edit</button>
-                  <button className="px-3 py-1 rounded bg-red-600 text-white" onClick={() => del(r.id)}>Delete</button>
+            {rows.length ? (
+              rows.map((r) => (
+                <tr
+                  key={r.id}
+                  className="border-b dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                >
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">{r.firm_name}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.hq || "-"}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.contact || "-"}</td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => editRow(r)}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-3"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => del(r.id)}
+                      className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={4} className="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                  No firms found
                 </td>
               </tr>
-            )) : (
-              <tr><td className="px-3 py-6 text-center" colSpan={7}>No data</td></tr>
             )}
           </tbody>
-        </table>
-      </div> */}
-    </div>
+        </table> */}
+      </div>
+    
   );
 }
+
+     

@@ -25,6 +25,10 @@ export default function Page() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteRowId, setDeleteRowId] = useState(null);
 
+  //
+  const [uploadMessage, setUploadMessage] = useState(""); // For success or error messages
+  const [uploadErrors, setUploadErrors] = useState([]); // For skipped rows or errors
+
   // Search and filter + pagination
   const fetchRows = async ({
     q = "",
@@ -198,18 +202,22 @@ export default function Page() {
           Search
         </button>
         <select
-          className="w-full sm:w-auto px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all custom-dropdown"
+          className="w-full sm:w-auto px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all custom-dropdown appearance-none"
           value={hq}
           onChange={(e) => setHq(e.target.value)}
         >
           <option value="">All Headquarters</option>
           {hqs.map((c, idx) => (
-            <option key={`${c}-${idx}`} value={c}
+            <option
+              key={`${c}-${idx}`}
+              value={c}
+              className="bg-white text-black hover:bg-red-500 hover:text-white"
             >
               {c}
             </option>
           ))}
         </select>
+       
       </form>
 
       <div className="flex items-center gap-4 mb-6">
