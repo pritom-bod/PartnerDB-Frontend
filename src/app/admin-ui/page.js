@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/partners/`;
-const UPLOAD_API = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/upload-excel/`;
+const API = `${process.env.NEXT_PUBLIC_API_URL || "https://partnersdb-backend.onrender.com/api"}/partners/`;
+const UPLOAD_API = `${process.env.NEXT_PUBLIC_API_URL || "https://partnersdb-backend.onrender.com/api"}/upload-excel/`;
 
 const emptyForm = {
   firm_name: "",

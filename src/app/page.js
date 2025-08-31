@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FaEdit, FaTrashAlt, FaTimes, FaSearch } from "react-icons/fa";
 import Image from "next/image";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"; // Fallback for local dev
+const API = process.env.NEXT_PUBLIC_API_URL || "https://partnersdb-backend.onrender.com/api"; // Fallback for local dev
 
 export default function Page() {
   const [rows, setRows] = useState([]);
