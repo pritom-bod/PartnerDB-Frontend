@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API = "http://127.0.0.1:8000/api/partners/";
-const UPLOAD_API = "http://127.0.0.1:8000/api/upload-excel/";
+const API = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/partners/`;
+const UPLOAD_API = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/upload-excel/`;
 
 const emptyForm = {
   firm_name: "",
@@ -20,18 +20,33 @@ export default function AdminUI() {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null); // New: Track errors
   // Excel upload states
   const [file, setFile] = useState(null);
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadErrors, setUploadErrors] = useState([]);
 
   const fetchRows = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const res = await fetch(API);
+      console.log("Fetching from:", API); // Debug
+      const res = await fetch(API, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`HTTP error! Status: ${res.status}, Message: ${errorText}`);
+      }
       const data = await res.json();
       setRows(data.results || data); // Handle both paginated and non-paginated responses
     } catch (err) {
       console.error("Error fetching rows:", err);
+      setError(err.message);
+      setRows([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -42,21 +57,26 @@ export default function AdminUI() {
   const save = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
       const method = editingId ? "PUT" : "POST";
       const url = editingId ? `${API}${editingId}/` : API;
+      console.log("Saving to:", url, "Method:", method); // Debug
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error("Save failed");
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`HTTP error! Status: ${res.status}, Message: ${errorText}`);
+      }
       setForm(emptyForm);
       setEditingId(null);
       await fetchRows();
     } catch (err) {
-      console.error(err);
-      alert(err.message);
+      console.error("Error saving:", err);
+      setError(`Failed to save: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -76,12 +96,22 @@ export default function AdminUI() {
 
   const del = async (id) => {
     if (!confirm("Delete this partner?")) return;
+    setError(null);
     try {
-      const res = await fetch(`${API}${id}/`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Delete failed");
+      const url = `${API}${id}/`;
+      console.log("Deleting:", url); // Debug
+      const res = await fetch(url, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`HTTP error! Status: ${res.status}, Message: ${errorText}`);
+      }
       await fetchRows();
     } catch (err) {
-      alert("Delete failed");
+      console.error("Error deleting:", err);
+      setError(`Failed to delete: ${err.message}`);
     }
   };
 
@@ -90,6 +120,7 @@ export default function AdminUI() {
     setFile(e.target.files[0]);
     setUploadMessage("");
     setUploadErrors([]);
+    setError(null);
   };
 
   const handleUpload = async (e) => {
@@ -98,39 +129,45 @@ export default function AdminUI() {
       setUploadMessage("Please select an Excel file");
       return;
     }
-
+    setLoading(true);
+    setError(null);
     const formData = new FormData();
     formData.append("file", file);
-
     try {
+      console.log("Uploading to:", UPLOAD_API); // Debug
       const response = await axios.post(UPLOAD_API, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      setUploadMessage("Uploaded successfully!"); // Success message
+      setUploadMessage("Uploaded successfully!");
       if (response.data.skipped) {
         setUploadErrors(response.data.skipped);
       }
-      setFile(null); // Reset file input
-      await fetchRows(); // Refresh list
+      setFile(null);
+      await fetchRows();
     } catch (error) {
+      console.error("Error uploading:", error);
       setUploadMessage(error.response?.data?.error || "Upload failed");
       setUploadErrors([]);
+      setError(error.response?.data?.error || "Upload failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
+      {/* Error Display */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 rounded-lg">
+          Error: {error}
+        </div>
+      )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-red-700 dark:text-red-800">
           Create Firms
         </h1>
         {/* Excel Upload Section */}
-        <form
-          onSubmit={handleUpload}
-          className="flex items-center gap-3"
-        >
+        <form onSubmit={handleUpload} className="flex items-center gap-3">
           <input
             type="file"
             accept=".xlsx,.xls"
@@ -203,7 +240,6 @@ export default function AdminUI() {
           value={form.donor_experience}
           onChange={(e) => setForm({ ...form, donor_experience: e.target.value })}
         />
-
         <div className="md:col-span-2 flex gap-2">
           <button
             disabled={loading}
@@ -225,9 +261,10 @@ export default function AdminUI() {
           )}
         </div>
       </form>
+
       {/* Table */}
-      {/* <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden"> */}
-        {/* <table className="min-w-full text-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+        <table className="min-w-full text-sm">
           <thead className="bg-blue-900 dark:bg-blue-900 text-white">
             <tr>
               <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">Firm Name</th>
@@ -237,7 +274,13 @@ export default function AdminUI() {
             </tr>
           </thead>
           <tbody>
-            {rows.length ? (
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                  Loading...
+                </td>
+              </tr>
+            ) : rows.length ? (
               rows.map((r) => (
                 <tr
                   key={r.id}
@@ -270,10 +313,8 @@ export default function AdminUI() {
               </tr>
             )}
           </tbody>
-        </table> */}
+        </table>
       </div>
-    
+    </div>
   );
 }
-
-     
