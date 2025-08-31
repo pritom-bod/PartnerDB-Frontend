@@ -184,7 +184,7 @@ export default function Page() {
           href="/admin-ui"
           className="text-sm font-bold font-medium text-red-800 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors"
         >
-          Add New Firm
+          +Add New Firm
         </a>
       </header>
 
