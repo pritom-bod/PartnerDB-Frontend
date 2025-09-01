@@ -20,17 +20,19 @@ export default function AdminUI() {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null); // New: Track errors
+  const [error, setError] = useState(null);
+
   // Excel upload states
   const [file, setFile] = useState(null);
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadErrors, setUploadErrors] = useState([]);
 
+  // Fetch data
   const fetchRows = async () => {
     setLoading(true);
     setError(null);
     try {
-      console.log("Fetching from:", API); // Debug
+      console.log("Fetching from:", API);
       const res = await fetch(API, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -40,7 +42,7 @@ export default function AdminUI() {
         throw new Error(`HTTP error! Status: ${res.status}, Message: ${errorText}`);
       }
       const data = await res.json();
-      setRows(data.results || data); // Handle both paginated and non-paginated responses
+      setRows(data.results || data); // Handle pagination & non-pagination
     } catch (err) {
       console.error("Error fetching rows:", err);
       setError(err.message);
@@ -54,6 +56,7 @@ export default function AdminUI() {
     fetchRows();
   }, []);
 
+  // Save new or edit partner
   const save = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -61,7 +64,7 @@ export default function AdminUI() {
     try {
       const method = editingId ? "PUT" : "POST";
       const url = editingId ? `${API}${editingId}/` : API;
-      console.log("Saving to:", url, "Method:", method); // Debug
+      console.log("Saving to:", url, "Method:", method);
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -82,6 +85,7 @@ export default function AdminUI() {
     }
   };
 
+  // Edit row
   const editRow = (r) => {
     setForm({
       firm_name: r.firm_name || "",
@@ -94,12 +98,13 @@ export default function AdminUI() {
     setEditingId(r.id);
   };
 
+  // Delete row
   const del = async (id) => {
     if (!confirm("Delete this partner?")) return;
     setError(null);
     try {
       const url = `${API}${id}/`;
-      console.log("Deleting:", url); // Debug
+      console.log("Deleting:", url);
       const res = await fetch(url, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -115,7 +120,7 @@ export default function AdminUI() {
     }
   };
 
-  // Excel upload handler
+  // File change
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setUploadMessage("");
@@ -123,6 +128,7 @@ export default function AdminUI() {
     setError(null);
   };
 
+  // Upload Excel
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!file) {
@@ -134,10 +140,10 @@ export default function AdminUI() {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      console.log("Uploading to:", UPLOAD_API); // Debug
-      const response = await axios.post(UPLOAD_API, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      console.log("Uploading to:", UPLOAD_API);
+      // ✅ No custom headers → axios auto handles multipart
+      const response = await axios.post(UPLOAD_API, formData);
+
       setUploadMessage("Uploaded successfully!");
       if (response.data.skipped) {
         setUploadErrors(response.data.skipped);
@@ -162,11 +168,12 @@ export default function AdminUI() {
           Error: {error}
         </div>
       )}
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-red-700 dark:text-red-800">
           Create Firms
         </h1>
-        {/* Excel Upload Section */}
+        {/* Excel Upload */}
         <form onSubmit={handleUpload} className="flex items-center gap-3">
           <input
             type="file"
@@ -183,11 +190,13 @@ export default function AdminUI() {
           </button>
         </form>
       </div>
+
       {uploadMessage && (
         <div className="mb-6 p-4 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-lg">
           {uploadMessage}
         </div>
       )}
+
       {uploadErrors.length > 0 && (
         <div className="mb-6 p-4 bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 rounded-lg">
           <p>Errors:</p>

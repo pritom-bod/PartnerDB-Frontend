@@ -62,6 +62,12 @@ export default function Page() {
     }
   };
 
+const capitalizeFirst = (str) => {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+
   // Fetch HQ options
   const fetchHqs = async () => {
     try {
@@ -93,7 +99,7 @@ export default function Page() {
   };
 
   const headers = useMemo(
-    () => ["Firm Name", "Headquarters", "Contact", "Action"],
+    () => ["Firm Name", "Focuse Area", "", "Action"],
     []
   );
 
@@ -273,22 +279,22 @@ export default function Page() {
                         className="hidden md:block"
                       />
                       <div className="flex flex-col">
-                        <span className="text-base">{r.firm_name}</span>
+                        <span className="text-base">{capitalizeFirst(r.firm_name)}</span>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {r.firm || "-"}
+                          {r.firm}
                         </span>
                       </div>
                     </div>
                   </td>
                   <td className="p-6 text-gray-800 dark:text-gray-400">
                     <div className="flex flex-col">
-                      <span>{r.hq || "-"}</span>
+                      <span>{r.focus_area || "-"}</span>
                       <span className="text-sm"></span>
                     </div>
                   </td>
                   <td className="p-6 text-gray-500 dark:text-gray-400">
                     <div className="flex flex-col">
-                      <span>{r.contact || "-"}</span>
+                      <span>{r.contact}</span>
                       <span className="text-sm">{r.email || "-"}</span>
                     </div>
                   </td>
