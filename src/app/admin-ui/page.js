@@ -271,7 +271,7 @@ export default function AdminUI() {
         </div>
       </form>
 
-      {/* Table
+      {/* Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
         <table className="min-w-full text-sm">
           <thead className="bg-blue-900 dark:bg-blue-900 text-white">
@@ -323,7 +323,7 @@ export default function AdminUI() {
             )}
           </tbody>
         </table>
-      </div> */}
+      </div>
     </div>
   );
 }
