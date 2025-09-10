@@ -3,8 +3,19 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API = `${process.env.NEXT_PUBLIC_API_URL || "https://partnersdb-backend.onrender.com/api"}/partners/`;
-const UPLOAD_API = `${process.env.NEXT_PUBLIC_API_URL || "https://partnersdb-backend.onrender.com/api"}/upload-excel/`;
+// const API = `${
+//   process.env.NEXT_PUBLIC_API_URL ||
+//   "https://partnersdb-backend.onrender.com/api"
+// }/partners/`;
+
+// const UPLOAD_API = `${
+//   process.env.NEXT_PUBLIC_API_URL ||
+//   "http://127.0.0.1:8000/api"
+
+// }/upload-excel/`;
+
+const API = "http://127.0.0.1:8000/api/partners/";
+const UPLOAD_API = `http://127.0.0.1:8000/api/upload-excel/`;
 
 const emptyForm = {
   firm_name: "",
@@ -39,7 +50,9 @@ export default function AdminUI() {
       });
       if (!res.ok) {
         const errorText = await res.text();
-        throw new Error(`HTTP error! Status: ${res.status}, Message: ${errorText}`);
+        throw new Error(
+          `HTTP error! Status: ${res.status}, Message: ${errorText}`
+        );
       }
       const data = await res.json();
       setRows(data.results || data); // Handle pagination & non-pagination
@@ -72,7 +85,9 @@ export default function AdminUI() {
       });
       if (!res.ok) {
         const errorText = await res.text();
-        throw new Error(`HTTP error! Status: ${res.status}, Message: ${errorText}`);
+        throw new Error(
+          `HTTP error! Status: ${res.status}, Message: ${errorText}`
+        );
       }
       setForm(emptyForm);
       setEditingId(null);
@@ -111,7 +126,9 @@ export default function AdminUI() {
       });
       if (!res.ok) {
         const errorText = await res.text();
-        throw new Error(`HTTP error! Status: ${res.status}, Message: ${errorText}`);
+        throw new Error(
+          `HTTP error! Status: ${res.status}, Message: ${errorText}`
+        );
       }
       await fetchRows();
     } catch (err) {
@@ -209,7 +226,10 @@ export default function AdminUI() {
       )}
 
       {/* Form */}
-      <form onSubmit={save} className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+      <form
+        onSubmit={save}
+        className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6"
+      >
         <input
           className="border px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           placeholder="Firm Name *"
@@ -233,7 +253,9 @@ export default function AdminUI() {
           className="border px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           placeholder="Current Partnership Status"
           value={form.current_partnership_status}
-          onChange={(e) => setForm({ ...form, current_partnership_status: e.target.value })}
+          onChange={(e) =>
+            setForm({ ...form, current_partnership_status: e.target.value })
+          }
         />
         <textarea
           className="border px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all md:col-span-2"
@@ -247,7 +269,9 @@ export default function AdminUI() {
           rows={3}
           placeholder="Donor Experience"
           value={form.donor_experience}
-          onChange={(e) => setForm({ ...form, donor_experience: e.target.value })}
+          onChange={(e) =>
+            setForm({ ...form, donor_experience: e.target.value })
+          }
         />
         <div className="md:col-span-2 flex gap-2">
           <button
@@ -276,16 +300,27 @@ export default function AdminUI() {
         <table className="min-w-full text-sm">
           <thead className="bg-blue-900 dark:bg-blue-900 text-white">
             <tr>
-              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">Firm Name</th>
-              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">HQ</th>
-              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">Contact</th>
-              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">Actions</th>
+              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">
+                Firm Name
+              </th>
+              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">
+                HQ
+              </th>
+              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">
+                Contact
+              </th>
+              <th className="text-left px-4 py-3 font-semibold uppercase text-xs tracking-wide">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                <td
+                  colSpan={4}
+                  className="px-4 py-6 text-center text-gray-500 dark:text-gray-400"
+                >
                   Loading...
                 </td>
               </tr>
@@ -295,9 +330,15 @@ export default function AdminUI() {
                   key={r.id}
                   className="border-b dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
                 >
-                  <td className="px-4 py-3 text-gray-900 dark:text-white">{r.firm_name}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.hq || "-"}</td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{r.contact || "-"}</td>
+                  <td className="px-4 py-3 text-gray-900 dark:text-white">
+                    {r.firm_name}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                    {r.hq || "-"}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                    {r.contact || "-"}
+                  </td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => editRow(r)}
@@ -316,7 +357,10 @@ export default function AdminUI() {
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                <td
+                  colSpan={4}
+                  className="px-4 py-6 text-center text-gray-500 dark:text-gray-400"
+                >
                   No firms found
                 </td>
               </tr>
