@@ -37,6 +37,7 @@ export default function AdminUI() {
   const [file, setFile] = useState(null);
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadErrors, setUploadErrors] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Fetch data
   const fetchRows = async () => {
@@ -191,7 +192,7 @@ export default function AdminUI() {
           Create Firms
         </h1>
         {/* Excel Upload */}
-        <form onSubmit={handleUpload} className="flex items-center gap-3">
+        {/* <form onSubmit={handleUpload} className="flex items-center gap-3">
           <input
             type="file"
             accept=".xlsx,.xls"
@@ -204,6 +205,81 @@ export default function AdminUI() {
             className="px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 transition-all font-medium"
           >
             Upload Excel
+          </button>
+        </form> */}
+        <form onSubmit={handleUpload}>
+          <div
+            className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+              isDragging
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                : "border-gray-300 dark:border-gray-600"
+            } hover:border-blue-400 dark:hover:border-blue-500`}
+            onDragEnter={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsDragging(true);
+            }}
+            onDragLeave={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsDragging(false);
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsDragging(false);
+              if (e.dataTransfer.files) {
+                setFile(e.dataTransfer.files[0]);
+                setUploadMessage("");
+                setUploadErrors([]);
+                setError(null);
+              }
+            }}
+          >
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleFileChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              id="file-upload"
+            />
+            <label htmlFor="file-upload" className="cursor-pointer">
+              <div className="flex flex-col items-center">
+                <svg
+                  className="w-12 h-12 text-gray-400 dark:text-gray-500 mb-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 0115.71 6L16 6a5 5 0 011 9.71M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {file
+                    ? file.name
+                    : "Drag and drop your Excel file here, or click to browse"}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Supports .xlsx and .xls files
+                </p>
+              </div>
+            </label>
+          </div>
+          <button
+            type="submit"
+            disabled={loading || !file}
+            className="mt-4 w-full px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Uploading..." : "Upload Excel"}
           </button>
         </form>
       </div>
