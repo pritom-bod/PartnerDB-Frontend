@@ -4,9 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FaEdit, FaTrashAlt, FaTimes, FaSearch } from "react-icons/fa";
 import Image from "next/image";
 
-const API =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://partnersdb-backend.onrender.com/api"; // Fallback for local dev
+const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api"; // Fallback for local dev
 
 export default function Page() {
   const [rows, setRows] = useState([]);
@@ -168,33 +166,6 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 lg:p-8 max-w-7xl mx-auto">
-      {/* Header with Logo and Title */}
-      <header className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Image
-            src="/max.png"
-            alt="Company Logo"
-            width={60}
-            height={60}
-            className="rectangular"
-          />
-          <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-800">
-            Maxwell
-            <span className="text-red-700 dark:text-red-800"> Stamp</span>
-            <span className="font-bold text-blue-900 dark:text-blue-800">
-              {" "}
-              LTD.
-            </span>
-          </h1>
-        </div>
-        <a
-          href="/admin-ui"
-          className="text-sm font-medium text-red-800 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-        >
-          +Add New Firm
-        </a>
-      </header>
-
       {/* Search + Filter */}
       <form
         onSubmit={onSearch}

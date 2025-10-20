@@ -22,6 +22,7 @@ const emptyForm = {
   hq: "",
   focus_area: "",
   contact: "",
+  sector: "",
   donor_experience: "",
   current_partnership_status: "",
 };
@@ -108,6 +109,7 @@ export default function AdminUI() {
       hq: r.hq || "",
       focus_area: r.focus_area || "",
       contact: r.contact || "",
+      sector: r.sector || "",
       donor_experience: r.donor_experience || "",
       current_partnership_status: r.current_partnership_status || "",
     });
